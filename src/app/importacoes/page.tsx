@@ -38,7 +38,7 @@ function parseDateValue(val: unknown): string | null {
 
 function parseNum(val: unknown): number {
   if (typeof val === 'number') return val
-  if (typeof val === 'string') return parseFloat(val.replace(',', '.')) || 0
+  if (typeof val === 'string') return parseFloat(val.replace(/[R$\s.]/g, '').replace(',', '.')) || 0
   return 0
 }
 
@@ -304,7 +304,7 @@ export default function ImportacoesPage() {
       const data = evt.target?.result
       const workbook = XLSX.read(data, { type: 'binary', cellDates: true })
       const sheet = workbook.Sheets[workbook.SheetNames[0]]
-      const json = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false, dateNF: 'yyyy-mm-dd' }) as any[][]
+      const json = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: true }) as any[][]
       setAllRows(json)
       setPreview(json.slice(0, 6))
     }
