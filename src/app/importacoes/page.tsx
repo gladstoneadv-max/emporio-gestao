@@ -150,7 +150,7 @@ async function importarDespesas(
 ): Promise<ResultadoImport> {
   const resultado: ResultadoImport = { total: 0, inseridos: 0, erros: [] }
 
-  let tipoAtual = 'Fixo'
+  let tipoAtual = 'fixa'
 
   for (const row of rows) {
     if (!row || row.length === 0) continue
@@ -176,8 +176,8 @@ async function importarDespesas(
 
     // Detectar seção
     const nomeLower = colNome.toLowerCase()
-    if (nomeLower.includes('fixas')) { tipoAtual = 'Fixo'; continue }
-    if (nomeLower.includes('variáveis') || nomeLower.includes('variaveis')) { tipoAtual = 'Variável'; continue }
+    if (nomeLower.includes('fixas')) { tipoAtual = 'fixa'; continue }
+    if (nomeLower.includes('variáveis') || nomeLower.includes('variaveis')) { tipoAtual = 'variavel'; continue }
     if (nomeLower.includes('total') || nomeLower.includes('controle') || nomeLower.includes('crediário') || nomeLower === 'valor') continue
 
     const valor = parseNum(colValor)
