@@ -150,35 +150,50 @@ async function importarDespesas(
 ): Promise<ResultadoImport> {
   const resultado: ResultadoImport = { total: 0, inseridos: 0, erros: [] }
 
-  // A planilha de despesas tem seções: "Despesas Fixas", "Despesas Variáveis"
-  // Formato: col B = nome, col C = valor
   let tipoAtual = 'Fixo'
 
   for (const row of rows) {
-    const colB = String(row[1] ?? '').trim()
-    const colC = row[2]
+    if (!row || row.length === 0) continue
 
-    if (!colB) continue
+    // Encontrar a coluna com nome (texto não vazio)
+    let colNome = ''
+    let colValor: any = null
+
+    // Tentar colunas B e C (índices 1 e 2)
+    for (let i = 0; i < row.length; i++) {
+      const cell = row[i]
+      if (cell != null && cell !== '') {
+        if (!colNome && typeof cell === 'string') {
+          colNome = String(cell).trim()
+        } else if (colNome && colValor == null && (typeof cell === 'number' || (typeof cell === 'string' && cell !== ''))) {
+          colValor = cell
+          break
+        }
+      }
+    }
+
+    if (!colNome) continue
 
     // Detectar seção
-    if (colB.toLowerCase().includes('fixas')) { tipoAtual = 'Fixo'; continue }
-    if (colB.toLowerCase().includes('variáveis') || colB.toLowerCase().includes('variaveis')) { tipoAtual = 'Variável'; continue }
-    if (colB.toLowerCase().includes('total') || colB.toLowerCase().includes('compras') || colB.toLowerCase().includes('controle')) continue
+    const nomeLower = colNome.toLowerCase()
+    if (nomeLower.includes('fixas')) { tipoAtual = 'Fixo'; continue }
+    if (nomeLower.includes('variáveis') || nomeLower.includes('variaveis')) { tipoAtual = 'Variável'; continue }
+    if (nomeLower.includes('total') || nomeLower.includes('controle') || nomeLower.includes('crediário') || nomeLower === 'valor') continue
 
-    const valor = parseNum(colC)
+    const valor = parseNum(colValor)
     if (!valor || valor <= 0) continue
 
     resultado.total++
 
     const { error } = await supabase.from('despesas').insert({
-      nome: colB,
+      nome: colNome,
       tipo: tipoAtual,
       valor,
       mes_referencia: mesReferencia,
       importacao_id: importacaoId,
     })
 
-    if (error) resultado.erros.push(`${colB}: ${error.message}`)
+    if (error) resultado.erros.push(`${colNome}: ${error.message}`)
     else resultado.inseridos++
   }
 
