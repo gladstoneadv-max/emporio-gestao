@@ -346,7 +346,8 @@ export default function ImportacoesPage() {
         .update({
           status: res.erros.length === 0 ? 'concluido' : 'concluido_com_erros',
           total_registros: res.total,
-          registros_inseridos: res.inseridos,
+          registros_importados: res.inseridos,
+          registros_com_erro: res.erros.length,
         })
         .eq('id', importacao.id)
 
